@@ -1,0 +1,13 @@
+{
+  "v": "2",
+  "ps": "__DOMAIN__",
+  "add": "__DOMAIN__",
+  "port": "443",
+  "id": "__V2RAY_UUID__",
+  "aid": "0",
+  "net": "ws",
+  "type": "none",
+  "host": "__DOMAIN__",
+  "path": "__V2RAY_PATH__",
+  "tls": "tls"
+}
