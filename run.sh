@@ -64,7 +64,7 @@ do_install() {
     log_info "Preparing system environment..."
     timedatectl set-timezone Asia/Shanghai
     apt-get update && apt-get upgrade -y
-    apt-get install -y nginx curl socat ufw jq qrencode net-tools
+    apt-get install -y nginx curl socat ufw jq qrencode net-tools mailx monit sqlite3 python-pyinotify-doc
 
     log_info "Installing V2Ray..."
     bash <(curl -L https://raw.githubusercontent.com/v2fly/fhs-install-v2ray/master/install-release.sh)
@@ -141,13 +141,23 @@ EOF
 
     log_info "Performing system security hardening..."
 
-    SSH_PORT=$(grep -i '^port' /etc/ssh/sshd_config | awk '{print $2}' | head -n 1)
-    if [ -z "$SSH_PORT" ]; then
-        SSH_PORT=22
-        log_info "No custom SSH port detected in sshd_config, will set firewall rules for default port 22."
-    else
-        log_info "Detected custom SSH port: $SSH_PORT, will set firewall rules for this port."
+    log_info "Detecting the effective SSH port..."
+
+    SSH_PORT=$(sshd -T 2>/dev/null | grep "^port " | awk '{print $2}' | head -n 1 || true)
+
+    if [ -z "${SSH_PORT:-}" ]; then
+        if [ -n "${SSH_CONNECTION:-}" ]; then
+            SSH_PORT=$(echo "$SSH_CONNECTION" | awk '{print $4}')
+            log_warning "Failed to read SSH port from sshd, falling back to current connection port: $SSH_PORT"
+        fi
     fi
+
+    if ! [[ "${SSH_PORT:-}" =~ ^[0-9]+$ ]]; then
+        SSH_PORT=22
+        log_warning "Unable to reliably detect SSH port, forcing to default 22 (please verify firewall rules)."
+    fi
+
+    log_info "Final confirmed SSH port: $SSH_PORT"
 
     ufw default deny
     ufw allow "$SSH_PORT"/tcp comment 'SSH'
