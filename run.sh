@@ -64,7 +64,7 @@ do_install() {
     log_info "Preparing system environment..."
     timedatectl set-timezone Asia/Shanghai
     apt-get update && apt-get upgrade -y
-    apt-get install -y nginx curl socat ufw jq qrencode net-tools mailx monit sqlite3 python-pyinotify-doc
+    apt-get install -y nginx curl socat ufw jq qrencode net-tools python-pyinotify-doc
 
     log_info "Installing V2Ray..."
     bash <(curl -L https://raw.githubusercontent.com/v2fly/fhs-install-v2ray/master/install-release.sh)
